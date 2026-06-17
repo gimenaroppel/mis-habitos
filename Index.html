@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Mis Hábitos" />
+  <meta name="theme-color" content="#0f0f14" />
+  <title>Mis Hábitos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      background: #0f0f14;
+      color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 80px);
+    }
+    #app { max-width: 480px; margin: 0 auto; }
+
+    /* Header */
+    .header { padding: 20px 20px 16px; border-bottom: 1px solid #1e1e2e; }
+    .header h1 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    .header p { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .nav { display: flex; gap: 8px; margin-top: 14px; }
+    .nav button { flex: 1; padding: 9px 0; border-radius: 10px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.15s; }
+    .nav button.active { background: #6366f1; color: #fff; }
+    .nav button:not(.active) { background: #1e1e2e; color: #6b7280; }
+
+    /* Week strip */
+    .week-strip { display: flex; gap: 6px; overflow-x: auto; padding: 14px 20px; scrollbar-width: none; }
+    .week-strip::-webkit-scrollbar { display: none; }
+    .day-chip { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 11px; border-radius: 12px; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+    .day-chip.selected { background: #6366f1; }
+    .day-chip:not(.selected) { background: #1e1e2e; }
+    .day-chip.today:not(.selected) { border-color: #6366f1; }
+    .day-chip .day-name { font-size: 11px; font-weight: 600; color: #6b7280; }
+    .day-chip.selected .day-name { color: #c7d2fe; }
+    .day-chip .day-num { font-size: 16px; font-weight: 700; color: #9ca3af; }
+    .day-chip.selected .day-num { color: #fff; }
+    .score-dot { width: 6px; height: 6px; border-radius: 50%; background: #374151; }
+
+    /* Section */
+    .pad { padding: 0 20px; }
+
+    /* Type toggle */
+    .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+    .type-toggle button { flex: 1; padding: 10px 0; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.15s; }
+    .type-btn-food.active { background: #065f46; color: #34d399; }
+    .type-btn-food:not(.active) { background: #1e1e2e; color: #6b7280; }
+    .type-btn-gym.active { background: #1e3a5f; color: #60a5fa; }
+    .type-btn-gym:not(.active) { background: #1e1e2e; color: #6b7280; }
+
+    /* Card */
+    .card { background: #1a1a24; border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a3a; }
+    .card-title { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+
+    /* Meal chips */
+    .meal-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .meal-chip { padding: 7px 12px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+    .meal-chip.active { background: #065f46; color: #34d399; }
+    .meal-chip:not(.active) { background: #1e1e2e; color: #6b7280; }
+
+    /* Textarea */
+    textarea { width: 100%; background: #0f0f14; border: 1px solid #2a2a3a; border-radius: 10px; color: #e2e8f0; padding: 12px; font-size: 16px; resize: none; outline: none; font-family: inherit; min-height: 80px; }
+    textarea:focus { border-color: #6366f1; }
+
+    /* Image btn */
+    .img-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #1e1e2e; border: 1px dashed #374151; border-radius: 8px; color: #9ca3af; cursor: pointer; font-size: 13px; margin-top: 8px; }
+    .clear-btn { background: none; border: none; color: #f87171; cursor: pointer; font-size: 12px; margin-top: 8px; margin-left: 8px; }
+
+    /* Analyze btn */
+    .analyze-btn { width: 100%; padding: 13px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 15px; background: #6366f1; color: #fff; margin-top: 12px; transition: all 0.15s; }
+    .analyze-btn:disabled { background: #374151; cursor: not-allowed; }
+
+    /* Gym buttons */
+    .gym-btns { display: flex; gap: 10px; }
+    .gym-btn { flex: 1; padding: 24px 0; border-radius: 14px; cursor: pointer; font-size: 32px; text-align: center; border: none; }
+    .gym-btn-yes { background: #052e16; border: 2px solid #4ade8044; color: #4ade80; }
+    .gym-btn-no { background: #2d0a0a; border: 2px solid #f8717144; color: #f87171; }
+    .gym-btn span { font-size: 13px; display: block; margin-top: 6px; }
+    .gym-registered { text-align: center; padding: 16px 0; }
+    .gym-registered .gym-icon { font-size: 36px; }
+    .gym-registered p { font-weight: 600; margin-top: 6px; }
+    .change-btn { margin-top: 10px; background: none; border: 1px solid #374151; border-radius: 8px; color: #6b7280; cursor: pointer; padding: 7px 16px; font-size: 12px; }
+
+    /* Result card */
+    .result-card { background: #1a1a24; border: 1px solid #6366f133; border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .result-card h3 { font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+    .result-card .summary { font-size: 14px; color: #9ca3af; margin-bottom: 10px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-right: 6px; }
+    .macro-row { display: flex; gap: 8px; margin-top: 10px; }
+    .macro-chip { flex: 1; text-align: center; padding: 7px 4px; border-radius: 8px; background: #0f0f14; font-size: 11px; line-height: 1.6; }
+    .tip { margin-top: 12px; font-size: 13px; color: #a78bfa; border-left: 3px solid #6366f1; padding-left: 10px; }
+
+    /* Log items */
+    .section-title { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 10px; }
+    .log-item { border-left: 3px solid; padding-left: 12px; margin-bottom: 10px; }
+    .log-item .log-main { font-size: 14px; color: #e2e8f0; }
+    .log-item .log-tip { font-size: 12px; color: #4b5563; margin-top: 2px; }
+
+    /* Dashboard */
+    .week-grid { display: flex; gap: 6px; }
+    .week-cell { flex: 1; background: #0f0f14; border-radius: 10px; padding: 10px 4px; text-align: center; }
+    .week-cell .wday { font-size: 11px; color: #6b7280; }
+    .week-cell .wscore { font-size: 14px; font-weight: 700; margin: 4px 0; }
+    .week-cell .wicons { font-size: 10px; color: #4b5563; }
+    .stats-row { display: flex; gap: 10px; margin-bottom: 12px; }
+    .stat-card { flex: 1; background: #1a1a24; border-radius: 14px; padding: 14px 8px; border: 1px solid #2a2a3a; text-align: center; }
+    .stat-num { font-size: 24px; font-weight: 800; }
+    .stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .delete-all { width: 100%; padding: 11px; background: none; border: 1px solid #374151; border-radius: 10px; color: #f87171; cursor: pointer; font-size: 13px; margin-top: 4px; }
+
+    .error-msg { color: #f87171; font-size: 13px; text-align: center; margin-bottom: 10px; }
+    .empty { text-align: center; color: #374151; font-size: 14px; padding: 30px 0; line-height: 1.8; }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const STORAGE_KEY = "mis_habitos_logs_v2";
+const MEAL_TYPES = [
+  { key: "desayuno",  emoji: "☀️",  label: "Desayuno" },
+  { key: "almuerzo",  emoji: "🍽️", label: "Almuerzo" },
+  { key: "merienda",  emoji: "🫖",  label: "Merienda" },
+  { key: "cena",      emoji: "🌙",  label: "Cena"     },
+  { key: "colacion",  emoji: "🍎",  label: "Colación" },
+];
+const DAYS_ES = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+
+// ── State ──────────────────────────────────────────────
+let state = {
+  logs: [],
+  view: "log",         // log | dashboard
+  logType: "food",     // food | training
+  mealType: "desayuno",
+  inputText: "",
+  imageBase64: null,
+  loading: false,
+  aiResult: null,
+  error: null,
+  selectedDay: todayKey(),
+};
+
+function todayKey() { return new Date().toISOString().split("T")[0]; }
+function formatDate(s) { const [y,m,d]=s.split("-"); return `${d}/${m}/${y}`; }
+function getWeekDays() {
+  const days=[], today=new Date();
+  for(let i=6;i>=0;i--){ const d=new Date(today); d.setDate(today.getDate()-i); days.push(d.toISOString().split("T")[0]); }
+  return days;
+}
+
+function loadLogs() {
+  try { const s=localStorage.getItem(STORAGE_KEY); if(s) state.logs=JSON.parse(s); } catch{}
+}
+function saveLogs() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs)); } catch{}
+}
+
+function getDayLogs(day) { return state.logs.filter(l=>l.date===day); }
+
+function qualityColor(q) {
+  if(q==="buena"||q==="alta") return "#4ade80";
+  if(q==="regular"||q==="media"||q==="medio") return "#facc15";
+  return "#f87171";
+}
+function scoreColor(s) {
+  if(s===null) return "#374151";
+  if(s>=70) return "#4ade80";
+  if(s>=40) return "#facc15";
+  return "#f87171";
+}
+function getDayScore(day) {
+  const dl=getDayLogs(day);
+  const food=dl.filter(l=>l.logType==="food");
+  const train=dl.filter(l=>l.logType==="training");
+  let score=0,total=0;
+  food.forEach(f=>{ total++; if(f.calidad==="buena") score++; else if(f.calidad==="regular") score+=0.5; });
+  if(train.length>0){ total++; if(train.some(t=>t.fue)) score++; }
+  return total===0 ? null : Math.round((score/total)*100);
+}
+
+// ── AI call ────────────────────────────────────────────
+async function analyzeFood() {
+  if(!state.inputText && !state.imageBase64) return;
+  state.loading=true; state.error=null; state.aiResult=null; render();
+  try {
+    const mealLabel = MEAL_TYPES.find(m=>m.key===state.mealType)?.label || state.mealType;
+    const systemPrompt = `Sos un nutricionista que analiza registros de alimentación.
+El usuario te va a describir o mostrar lo que comió en su ${mealLabel}.
+Respondé SOLO con JSON con este formato exacto, sin markdown ni texto extra:
+{"tipo":"alimentacion","resumen":"descripción breve de 1 línea","calorias_estimadas":null,"calidad":"buena|regular|mala","proteinas":"alta|media|baja","carbohidratos":"alto|medio|bajo","grasas":"alta|media|baja","nota":"consejo corto de 1 oración"}`;
+
+    const userContent = [];
+    if(state.imageBase64) userContent.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:state.imageBase64}});
+    userContent.push({type:"text",text:state.inputText||"Analizá esta foto de mi comida"});
+
+    const resp = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,system:systemPrompt,messages:[{role:"user",content:userContent}]})
+    });
+    const data = await resp.json();
+    const text = (data.content||[]).map(b=>b.text||"").join("");
+    const parsed = JSON.parse(text.replace(/```json|```/g,"").trim());
+
+    const newLog = {id:Date.now(),date:state.selectedDay,logType:"food",mealType:state.mealType,raw:state.inputText,hasImage:!!state.imageBase64,...parsed};
+    state.logs.push(newLog);
+    saveLogs();
+    state.aiResult=parsed;
+    state.inputText="";
+    state.imageBase64=null;
+  } catch(e) {
+    state.error="No pude analizar el registro. Intentá de nuevo.";
+  }
+  state.loading=false; render();
+}
+
+function logGym(fue) {
+  const newLog={id:Date.now(),date:state.selectedDay,logType:"training",mealType:null,fue,tipo:"entrenamiento",resumen:fue?"Fue al gym ✅":"No fue al gym ❌",nota:fue?"¡Excelente! Seguí así.":"Mañana es otra oportunidad."};
+  state.logs.push(newLog);
+  saveLogs();
+  state.aiResult=newLog;
+  render();
+}
+
+function removeLog(id) {
+  state.logs=state.logs.filter(l=>l.id!==id);
+  saveLogs(); render();
+}
+
+// ── Render ─────────────────────────────────────────────
+function render() {
+  const app = document.getElementById("app");
+  const weekDays = getWeekDays();
+  const todayLogs = getDayLogs(state.selectedDay);
+  const todayGym = todayLogs.find(l=>l.logType==="training");
+
+  let html = `<div>`;
+
+  // Header
+  html += `
+  <div class="header">
+    <h1>💪 Mis Hábitos</h1>
+    <p>Alimentación &amp; Entrenamiento</p>
+    <div class="nav">
+      <button class="${state.view==="log"?"active":""}" onclick="setState({view:'log'})">+ Registrar</button>
+      <button class="${state.view==="dashboard"?"active":""}" onclick="setState({view:'dashboard'})">📊 Dashboard</button>
+    </div>
+  </div>`;
+
+  // Week strip
+  html += `<div class="week-strip">`;
+  weekDays.forEach(day=>{
+    const d=new Date(day+"T12:00:00");
+    const score=getDayScore(day);
+    const dotColor=scoreColor(score);
+    const cls=`day-chip${state.selectedDay===day?" selected":""}${day===todayKey()?" today":""}`;
+    html+=`<div class="${cls}" onclick="setState({selectedDay:'${day}'})">
+      <span class="day-name">${DAYS_ES[d.getDay()]}</span>
+      <span class="day-num">${d.getDate()}</span>
+      <div class="score-dot" style="background:${dotColor}"></div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // ── LOG view ──────────────────────────────────────────
+  if(state.view==="log") {
+    html+=`<div class="pad">`;
+    // Type toggle
+    html+=`<div class="type-toggle">
+      <button class="type-btn-food ${state.logType==="food"?"active":""}" onclick="setState({logType:'food',aiResult:null})">🥗 Comida</button>
+      <button class="type-btn-gym ${state.logType==="training"?"active":""}" onclick="setState({logType:'training',aiResult:null})">🏋️ Gym</button>
+    </div>`;
+
+    if(state.logType==="food") {
+      html+=`<div class="card">
+        <div class="card-title">¿Qué momento del día?</div>
+        <div class="meal-chips">`;
+      MEAL_TYPES.forEach(m=>{
+        html+=`<button class="meal-chip ${state.mealType===m.key?"active":""}" onclick="setState({mealType:'${m.key}'})">${m.emoji} ${m.label}</button>`;
+      });
+      html+=`</div>
+        <div class="card-title">¿Qué comiste?</div>
+        <textarea id="food-input" placeholder="Ej: Arroz con pollo y ensalada..." rows="3" oninput="state.inputText=this.value">${escHtml(state.inputText)}</textarea>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-top:8px">
+          <label class="img-btn">
+            📷 ${state.imageBase64?"✅ Foto cargada":"Subir foto"}
+            <input type="file" accept="image/*" style="display:none" onchange="handleImage(this)" />
+          </label>
+          ${state.imageBase64?`<button class="clear-btn" onclick="setState({imageBase64:null})">Quitar foto</button>`:""}
+        </div>
+        <button class="analyze-btn" onclick="analyzeFood()" ${state.loading||(!state.inputText&&!state.imageBase64)?"disabled":""}>
+          ${state.loading?"⏳ Analizando...":"✨ Analizar con IA"}
+        </button>
+      </div>`;
+    }
+
+    if(state.logType==="training") {
+      html+=`<div class="card">
+        <div class="card-title">¿Fuiste al gym hoy?</div>`;
+      if(todayGym) {
+        html+=`<div class="gym-registered">
+          <div class="gym-icon">${todayGym.fue?"✅":"❌"}</div>
+          <p style="color:${todayGym.fue?"#4ade80":"#f87171"}">${todayGym.fue?"Ya registraste que fuiste":"Ya registraste que no fuiste"}</p>
+          <button class="change-btn" onclick="removeLog(${todayGym.id})">Cambiar</button>
+        </div>`;
+      } else {
+        html+=`<div class="gym-btns">
+          <button class="gym-btn gym-btn-yes" onclick="logGym(true)">✅<span>Sí, fui</span></button>
+          <button class="gym-btn gym-btn-no" onclick="logGym(false)">❌<span>No fui</span></button>
+        </div>`;
+      }
+      html+=`</div>`;
+    }
+
+    if(state.error) html+=`<p class="error-msg">${state.error}</p>`;
+
+    // AI result
+    if(state.aiResult && state.aiResult.tipo==="alimentacion") {
+      const meal=MEAL_TYPES.find(m=>m.key===state.mealType);
+      const qc=qualityColor(state.aiResult.calidad);
+      html+=`<div class="result-card">
+        <h3>${meal?meal.emoji:""} Análisis — ${meal?meal.label:""}</h3>
+        <p class="summary">${escHtml(state.aiResult.resumen)}</p>
+        <span class="badge" style="background:${qc}22;color:${qc}">Calidad: ${state.aiResult.calidad}</span>
+        ${state.aiResult.calorias_estimadas?`<span class="badge" style="background:#a78bfa22;color:#a78bfa">~${state.aiResult.calorias_estimadas} kcal</span>`:""}
+        <div class="macro-row">
+          ${macroChip("Proteínas",state.aiResult.proteinas)}
+          ${macroChip("Carbos",state.aiResult.carbohidratos)}
+          ${macroChip("Grasas",state.aiResult.grasas)}
+        </div>
+        ${state.aiResult.nota?`<p class="tip">💡 ${escHtml(state.aiResult.nota)}</p>`:""}
+      </div>`;
+    }
+
+    // Today logs
+    if(todayLogs.length>0) {
+      html+=`<p class="section-title">Registros del ${formatDate(state.selectedDay)}</p>`;
+      todayLogs.forEach(log=>{
+        const meal=MEAL_TYPES.find(m=>m.key===log.mealType);
+        const bc=log.logType==="food"?"#34d399":log.fue?"#4ade80":"#f87171";
+        html+=`<div class="log-item" style="border-color:${bc}">
+          <p class="log-main">${log.logType==="food"?(meal?`${meal.emoji} ${meal.label}`:"🥗"):"🏋️"} ${escHtml(log.resumen)}</p>
+          ${log.nota?`<p class="log-tip">${escHtml(log.nota)}</p>`:""}
+        </div>`;
+      });
+    }
+
+    html+=`</div>`;
+  }
+
+  // ── DASHBOARD view ────────────────────────────────────
+  if(state.view==="dashboard") {
+    html+=`<div class="pad">`;
+    // Week grid
+    html+=`<div class="card"><div class="card-title">Resumen semanal</div><div class="week-grid">`;
+    weekDays.forEach(day=>{
+      const sc=getDayScore(day);
+      const d=new Date(day+"T12:00:00");
+      const dl=getDayLogs(day);
+      const trained=dl.some(l=>l.logType==="training"&&l.fue);
+      const fc=dl.filter(l=>l.logType==="food").length;
+      const bc=scoreColor(sc);
+      html+=`<div class="week-cell" style="border:2px solid ${bc}33">
+        <div class="wday">${DAYS_ES[d.getDay()]}</div>
+        <div class="wscore" style="color:${bc}">${sc!==null?sc+"%":"--"}</div>
+        <div class="wicons">${fc>0?`🥗${fc}`:""}${trained?"🏋️":""}</div>
+      </div>`;
+    });
+    html+=`</div></div>`;
+
+    // Stats
+    const gymDays=weekDays.filter(d=>getDayLogs(d).some(l=>l.logType==="training"&&l.fue)).length;
+    const totalFood=state.logs.filter(l=>l.logType==="food"&&weekDays.includes(l.date)).length;
+    const goodFood=state.logs.filter(l=>l.logType==="food"&&l.calidad==="buena"&&weekDays.includes(l.date)).length;
+    const healthPct=totalFood===0?"--":Math.round((goodFood/totalFood)*100)+"%";
+    html+=`<div class="stats-row">
+      <div class="stat-card"><div class="stat-num" style="color:#4ade80">${gymDays}<span style="font-size:14px;color:#6b7280">/7</span></div><div class="stat-label">Días gym</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#60a5fa">${totalFood}</div><div class="stat-label">Comidas</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#a78bfa">${healthPct}</div><div class="stat-label">Comida sana</div></div>
+    </div>`;
+
+    // All logs
+    html+=`<div class="card"><div class="card-title">Últimos registros</div>`;
+    if(state.logs.length===0) {
+      html+=`<div class="empty">Aún no hay registros.<br>¡Empezá a trackear!</div>`;
+    } else {
+      [...state.logs].reverse().slice(0,20).forEach(log=>{
+        const meal=MEAL_TYPES.find(m=>m.key===log.mealType);
+        const bc=log.logType==="food"?"#34d399":log.fue?"#4ade80":"#f87171";
+        const qc=log.calidad?qualityColor(log.calidad):null;
+        html+=`<div class="log-item" style="border-color:${bc}">
+          <p class="log-tip">${formatDate(log.date)} · ${log.logType==="food"?(meal?`${meal.emoji} ${meal.label}`:"Comida"):"Gym"}</p>
+          <p class="log-main">${escHtml(log.resumen)}</p>
+          ${qc?`<span class="badge" style="background:${qc}22;color:${qc}">${log.calidad}</span>`:""}
+        </div>`;
+      });
+    }
+    html+=`</div>`;
+
+    if(state.logs.length>0) {
+      html+=`<button class="delete-all" onclick="deleteAll()">Borrar todos los datos</button>`;
+    }
+    html+=`</div>`;
+  }
+
+  html+=`</div>`;
+  app.innerHTML=html;
+}
+
+function escHtml(s) {
+  if(!s) return "";
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function macroChip(label,val) {
+  const color=val==="alta"||val==="alto"?"#4ade80":val==="media"||val==="medio"?"#facc15":"#f87171";
+  return `<div class="macro-chip"><span style="color:#6b7280;font-size:10px">${label}</span><br><b style="color:${color}">${val||"?"}</b></div>`;
+}
+
+function setState(patch) {
+  Object.assign(state,patch);
+  render();
+}
+
+function handleImage(input) {
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{ state.imageBase64=reader.result.split(",")[1]; render(); };
+  reader.readAsDataURL(file);
+}
+
+function deleteAll() {
+  if(confirm("¿Borrar todos los registros?")){ state.logs=[]; saveLogs(); render(); }
+}
+
+// Init
+loadLogs();
+render();
+</script>
+</body>
+</html>
