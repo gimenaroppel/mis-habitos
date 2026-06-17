@@ -57,14 +57,20 @@
     .meal-chip.active { background: #065f46; color: #34d399; }
     .meal-chip:not(.active) { background: #1e1e2e; color: #6b7280; }
 
-    /* Upload zone */
-    .upload-zone { border: 2px dashed #2a2a3a; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 12px; position: relative; }
-    .upload-zone.has-image { border-color: #6366f133; border-style: solid; }
-    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-zone { border: 2px dashed #2a2a3a; border-radius: 12px; padding: 24px 20px; text-align: center; cursor: pointer; margin-bottom: 12px; }
     .upload-zone .uz-icon { font-size: 28px; margin-bottom: 6px; }
     .upload-zone .uz-text { font-size: 13px; color: #6b7280; }
     .upload-zone .uz-sub { font-size: 11px; color: #374151; margin-top: 2px; }
-    .preview-img { width: 100%; border-radius: 10px; max-height: 180px; object-fit: cover; display: block; }
+
+    .preview-wrap { position: relative; margin-bottom: 10px; }
+    .preview-img { width: 100%; border-radius: 10px; max-height: 220px; object-fit: cover; display: block; }
+    .preview-remove { position: absolute; top: 8px; right: 8px; background: #0f0f14cc; border: none; border-radius: 20px; color: #f87171; cursor: pointer; font-size: 13px; padding: 4px 10px; font-weight: 600; }
+
+    /* two action buttons side by side */
+    .img-actions { display: flex; gap: 8px; margin-top: 6px; }
+    .img-actions .btn-ai { flex: 1; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: 700; font-size: 14px; background: #6366f1; color: #fff; }
+    .img-actions .btn-save-photo { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #374151; cursor: pointer; font-weight: 600; font-size: 13px; background: none; color: #9ca3af; }
+    .img-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .divider { display: flex; align-items: center; gap: 10px; margin: 12px 0; color: #374151; font-size: 12px; }
     .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #2a2a3a; }
@@ -76,7 +82,6 @@
     .btn-primary:disabled { background: #374151; cursor: not-allowed; }
     .btn-secondary { width: 100%; padding: 11px; border-radius: 10px; border: 1px solid #374151; cursor: pointer; font-weight: 600; font-size: 14px; background: none; color: #9ca3af; margin-top: 8px; }
 
-    /* Edit ingredients panel */
     .ingredients-panel { background: #0f0f14; border-radius: 12px; padding: 14px; margin-top: 10px; border: 1px solid #2a2a3a; }
     .ingredients-panel .ing-title { font-size: 13px; font-weight: 600; color: #9ca3af; margin-bottom: 10px; }
     .ing-list { display: flex; flex-direction: column; gap: 6px; }
@@ -88,10 +93,7 @@
     .ing-add input { flex: 1; background: #1a1a24; border: 1px dashed #374151; border-radius: 8px; color: #e2e8f0; padding: 8px 10px; font-size: 14px; outline: none; font-family: inherit; }
     .ing-add button { padding: 8px 14px; background: #1e3a5f; border: none; border-radius: 8px; color: #60a5fa; font-weight: 600; cursor: pointer; font-size: 13px; }
 
-    /* Analysis badge */
     .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-right: 6px; margin-top: 4px; }
-    .macro-row { display: flex; gap: 8px; margin-top: 10px; }
-    .macro-chip { flex: 1; text-align: center; padding: 7px 4px; border-radius: 8px; background: #0f0f14; font-size: 11px; line-height: 1.7; }
     .tip { margin-top: 12px; font-size: 13px; color: #a78bfa; border-left: 3px solid #6366f1; padding-left: 10px; }
 
     .gym-btns { display: flex; gap: 10px; }
@@ -103,9 +105,17 @@
     .change-btn { margin-top: 10px; background: none; border: 1px solid #374151; border-radius: 8px; color: #6b7280; cursor: pointer; padding: 7px 16px; font-size: 12px; }
 
     .section-title { font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin: 16px 0 10px; }
-    .log-item { border-left: 3px solid; padding-left: 12px; margin-bottom: 10px; }
+    .log-item { border-left: 3px solid; padding-left: 12px; margin-bottom: 14px; }
     .log-main { font-size: 14px; color: #e2e8f0; }
     .log-sub { font-size: 12px; color: #4b5563; margin-top: 2px; }
+    /* photo thumbnail in log */
+    .log-photo { width: 100%; border-radius: 8px; margin-top: 8px; max-height: 160px; object-fit: cover; display: block; cursor: pointer; }
+
+    /* fullscreen photo viewer */
+    .photo-overlay { display: none; position: fixed; inset: 0; background: #000000ee; z-index: 999; align-items: center; justify-content: center; }
+    .photo-overlay.open { display: flex; }
+    .photo-overlay img { max-width: 96vw; max-height: 90vh; border-radius: 12px; object-fit: contain; }
+    .photo-overlay-close { position: fixed; top: 20px; right: 20px; background: #1a1a24; border: none; color: #e2e8f0; font-size: 22px; cursor: pointer; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 1000; }
 
     .week-grid { display: flex; gap: 6px; }
     .week-cell { flex: 1; background: #0f0f14; border-radius: 10px; padding: 10px 4px; text-align: center; }
@@ -115,7 +125,7 @@
     .stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
     .delete-all { width: 100%; padding: 11px; background: none; border: 1px solid #374151; border-radius: 10px; color: #f87171; cursor: pointer; font-size: 13px; margin-top: 4px; }
     .empty { text-align: center; color: #374151; font-size: 14px; padding: 30px 0; line-height: 1.8; }
-    .error-msg { color: #f87171; font-size: 13px; text-align: center; margin-bottom: 10px; }
+    .error-msg { color: #f87171; font-size: 13px; text-align: center; margin-top: 10px; }
     .success-msg { color: #4ade80; font-size: 14px; font-weight: 600; text-align: center; padding: 12px; background: #052e1644; border-radius: 10px; margin-bottom: 10px; }
     .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #ffffff44; border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -123,8 +133,14 @@
 </head>
 <body>
 <div id="app"></div>
+<!-- fullscreen photo overlay -->
+<div class="photo-overlay" id="photo-overlay" onclick="closePhoto()">
+  <button class="photo-overlay-close" onclick="closePhoto()">✕</button>
+  <img id="photo-overlay-img" src="" />
+</div>
+
 <script>
-const STORAGE_KEY = "mis_habitos_v3";
+const STORAGE_KEY = "mis_habitos_v4";
 const MEAL_TYPES = [
   { key: "desayuno", emoji: "☀️",  label: "Desayuno" },
   { key: "almuerzo", emoji: "🍽️", label: "Almuerzo" },
@@ -139,16 +155,13 @@ let state = {
   view: "log",
   logType: "food",
   mealType: "desayuno",
-  // food input
-  imageBase64: null,
+  imageBase64: null,        // for current upload session
   imagePreviewUrl: null,
   manualText: "",
-  // after AI analysis
-  aiStep: "input",   // input | confirm | saved
+  aiStep: "input",          // input | confirm | saved
   aiResult: null,
   editIngredients: [],
   newIngredient: "",
-  // ui
   loading: false,
   error: null,
   selectedDay: todayKey(),
@@ -189,6 +202,15 @@ function getDayScore(day) {
   return total===0?null:Math.round((score/total)*100);
 }
 
+// ── Photo overlay ──────────────────────────────────────
+function openPhoto(src) {
+  document.getElementById("photo-overlay-img").src = src;
+  document.getElementById("photo-overlay").classList.add("open");
+}
+function closePhoto() {
+  document.getElementById("photo-overlay").classList.remove("open");
+}
+
 // ── AI: analyze image ──────────────────────────────────
 async function analyzeImage() {
   if(!state.imageBase64) return;
@@ -196,20 +218,9 @@ async function analyzeImage() {
   try {
     const system = `Sos un nutricionista. Analizá esta foto de comida.
 Respondé SOLO con JSON, sin markdown:
-{
-  "tipo": "alimentacion",
-  "resumen": "nombre del plato en 1 línea",
-  "ingredientes": ["ingrediente 1","ingrediente 2","..."],
-  "calorias_estimadas": número o null,
-  "calidad": "buena|regular|mala",
-  "proteinas": "alta|media|baja",
-  "carbohidratos": "alto|medio|bajo",
-  "grasas": "alta|media|baja",
-  "nota": "consejo breve de 1 oración"
-}`;
+{"tipo":"alimentacion","resumen":"nombre del plato en 1 línea","ingredientes":["ingrediente 1","ingrediente 2"],"calorias_estimadas":null,"calidad":"buena|regular|mala","proteinas":"alta|media|baja","carbohidratos":"alto|medio|bajo","grasas":"alta|media|baja","nota":"consejo breve de 1 oración"}`;
     const resp = await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
+      method:"POST", headers:{"Content-Type":"application/json"},
       body:JSON.stringify({
         model:"claude-sonnet-4-6", max_tokens:1000, system,
         messages:[{role:"user",content:[
@@ -225,33 +236,31 @@ Respondé SOLO con JSON, sin markdown:
     state.editIngredients = (parsed.ingredientes||[]).map((ing,i)=>({id:Date.now()+i, val:ing}));
     state.aiStep = "confirm";
   } catch(e) {
-    state.error = "No pude analizar la foto. Intentá de nuevo o cargá manualmente.";
+    state.error = "No pude analizar la foto. Podés guardarla igual con el botón de abajo.";
   }
   state.loading=false; render();
 }
 
 // ── Save food log ──────────────────────────────────────
-function saveFoodLog() {
+function saveFoodLog(photoOnly) {
   const ingredients = state.editIngredients.map(i=>i.val).filter(v=>v.trim());
-  const isManual = !state.aiResult;
   const log = {
     id: Date.now(),
     date: state.selectedDay,
     logType: "food",
     mealType: state.mealType,
-    hasImage: !!state.imageBase64,
-    resumen: isManual
-      ? (state.manualText.substring(0,80) || "Comida registrada")
-      : state.aiResult.resumen,
-    ingredientes: isManual
-      ? (state.manualText ? [state.manualText] : [])
-      : ingredients,
-    calorias_estimadas: state.aiResult?.calorias_estimadas || null,
-    calidad: state.aiResult?.calidad || null,
-    proteinas: state.aiResult?.proteinas || null,
-    carbohidratos: state.aiResult?.carbohidratos || null,
-    grasas: state.aiResult?.grasas || null,
-    nota: state.aiResult?.nota || null,
+    // Save the actual base64 image so it shows in history
+    imageData: state.imageBase64 ? ("data:image/jpeg;base64," + state.imageBase64) : null,
+    resumen: photoOnly
+      ? "Foto guardada 📷"
+      : (state.aiResult ? state.aiResult.resumen : (state.manualText.substring(0,80) || "Comida registrada")),
+    ingredientes: photoOnly ? [] : (state.aiResult ? ingredients : (state.manualText ? [state.manualText] : [])),
+    calorias_estimadas: photoOnly ? null : (state.aiResult?.calorias_estimadas || null),
+    calidad: photoOnly ? null : (state.aiResult?.calidad || null),
+    proteinas: photoOnly ? null : (state.aiResult?.proteinas || null),
+    carbohidratos: photoOnly ? null : (state.aiResult?.carbohidratos || null),
+    grasas: photoOnly ? null : (state.aiResult?.grasas || null),
+    nota: photoOnly ? null : (state.aiResult?.nota || null),
   };
   state.logs.push(log);
   saveLogs();
@@ -260,39 +269,22 @@ function saveFoodLog() {
   state.manualText=""; state.aiResult=null; state.editIngredients=[];
   state.aiStep="saved";
   render();
-  setTimeout(()=>{ state.aiStep="input"; render(); }, 2000);
+  setTimeout(()=>{ state.aiStep="input"; render(); }, 1800);
 }
 
 function logGym(fue) {
   const log={id:Date.now(),date:state.selectedDay,logType:"training",mealType:null,fue,resumen:fue?"Fue al gym ✅":"No fue al gym ❌",nota:fue?"¡Excelente! Seguí así.":"Mañana es otra oportunidad."};
-  state.logs.push(log);
-  saveLogs(); render();
+  state.logs.push(log); saveLogs(); render();
 }
 function removeLog(id){ state.logs=state.logs.filter(l=>l.id!==id); saveLogs(); render(); }
-
-// ── Ingredient edit helpers ────────────────────────────
-function updateIngredient(id, val) {
-  state.editIngredients = state.editIngredients.map(i=>i.id===id?{...i,val}:i);
-}
-function deleteIngredient(id) {
-  state.editIngredients = state.editIngredients.filter(i=>i.id!==id);
-  render();
-}
-function addIngredient() {
-  const val = state.newIngredient.trim();
-  if(!val) return;
-  state.editIngredients.push({id:Date.now(),val});
-  state.newIngredient="";
-  render();
-}
-
-// ── Image handler ──────────────────────────────────────
+function updateIngredient(id,val){ state.editIngredients=state.editIngredients.map(i=>i.id===id?{...i,val}:i); }
+function deleteIngredient(id){ state.editIngredients=state.editIngredients.filter(i=>i.id!==id); render(); }
+function addIngredient(){ const v=state.newIngredient.trim(); if(!v) return; state.editIngredients.push({id:Date.now(),val:v}); state.newIngredient=""; render(); }
 function handleImage(input) {
-  const file=input.files[0];
-  if(!file) return;
-  state.imagePreviewUrl = URL.createObjectURL(file);
+  const file=input.files[0]; if(!file) return;
+  state.imagePreviewUrl=URL.createObjectURL(file);
   const reader=new FileReader();
-  reader.onload=()=>{ state.imageBase64=reader.result.split(",")[1]; state.aiStep="input"; render(); };
+  reader.onload=()=>{ state.imageBase64=reader.result.split(",")[1]; state.aiStep="input"; state.error=null; render(); };
   reader.readAsDataURL(file);
 }
 
@@ -317,8 +309,7 @@ function render() {
   // Week strip
   html+=`<div class="week-strip">`;
   weekDays.forEach(day=>{
-    const d=new Date(day+"T12:00:00");
-    const sc=getDayScore(day);
+    const d=new Date(day+"T12:00:00"), sc=getDayScore(day);
     html+=`<div class="day-chip${state.selectedDay===day?" selected":""}${day===todayKey()?" today":""}" onclick="setState({selectedDay:'${day}'})">
       <span class="dn">${DAYS_ES[d.getDay()]}</span>
       <span class="dd">${d.getDate()}</span>
@@ -327,18 +318,16 @@ function render() {
   });
   html+=`</div>`;
 
-  // ── LOG ───────────────────────────────────────────────
+  // ── LOG ──
   if(state.view==="log") {
     html+=`<div class="pad">`;
     html+=`<div class="type-toggle">
-      <button class="tf ${state.logType==="food"?"active":""}" onclick="setState({logType:'food',aiStep:'input',aiResult:null})">🥗 Comida</button>
-      <button class="tg ${state.logType==="training"?"active":""}" onclick="setState({logType:'training',aiStep:'input',aiResult:null})">🏋️ Gym</button>
+      <button class="tf ${state.logType==="food"?"active":""}" onclick="setState({logType:'food',aiStep:'input',aiResult:null,error:null})">🥗 Comida</button>
+      <button class="tg ${state.logType==="training"?"active":""}" onclick="setState({logType:'training',aiStep:'input',aiResult:null,error:null})">🏋️ Gym</button>
     </div>`;
 
-    // ── FOOD ──
     if(state.logType==="food") {
-
-      // Meal selector
+      // meal selector
       html+=`<div class="meal-chips">`;
       MEAL_TYPES.forEach(m=>{
         html+=`<button class="meal-chip ${state.mealType===m.key?"active":""}" onclick="setState({mealType:'${m.key}'})">${m.emoji} ${m.label}</button>`;
@@ -347,26 +336,24 @@ function render() {
 
       if(state.aiStep==="saved") {
         html+=`<div class="success-msg">✅ ¡Registrado!</div>`;
-      } else if(state.aiStep==="confirm" && state.aiResult) {
-        // ── CONFIRM step: show editable ingredients ──
-        const meal=MEAL_TYPES.find(m=>m.key===state.mealType);
-        html+=`<div class="card" style="border-color:#6366f133">
-          <div class="card-title">${meal?meal.emoji:""} ${meal?meal.label:""} — ${escH(state.aiResult.resumen)}</div>`;
-        if(state.aiResult.calorias_estimadas) {
-          html+=`<span class="badge" style="background:#a78bfa22;color:#a78bfa">~${state.aiResult.calorias_estimadas} kcal</span>`;
-        }
-        if(state.aiResult.calidad) {
-          const qc=qualityColor(state.aiResult.calidad);
-          html+=`<span class="badge" style="background:${qc}22;color:${qc}">Calidad: ${state.aiResult.calidad}</span>`;
-        }
-        if(state.aiResult.nota) {
-          html+=`<p class="tip" style="margin-top:10px">💡 ${escH(state.aiResult.nota)}</p>`;
-        }
 
-        // Editable ingredients
+      } else if(state.aiStep==="confirm" && state.aiResult) {
+        // confirm step with editable ingredients
+        const meal=MEAL_TYPES.find(m=>m.key===state.mealType);
+        html+=`<div class="card" style="border-color:#6366f133">`;
+        if(state.imageBase64) {
+          html+=`<div class="preview-wrap" style="margin-bottom:12px">
+            <img class="preview-img" src="data:image/jpeg;base64,${state.imageBase64}" onclick="openPhoto('data:image/jpeg;base64,${state.imageBase64}')" />
+          </div>`;
+        }
+        html+=`<div class="card-title">${meal?meal.emoji:""} ${meal?meal.label:""} — ${escH(state.aiResult.resumen)}</div>`;
+        if(state.aiResult.calorias_estimadas) html+=`<span class="badge" style="background:#a78bfa22;color:#a78bfa">~${state.aiResult.calorias_estimadas} kcal</span>`;
+        if(state.aiResult.calidad){const qc=qualityColor(state.aiResult.calidad);html+=`<span class="badge" style="background:${qc}22;color:${qc}">Calidad: ${state.aiResult.calidad}</span>`;}
+        if(state.aiResult.nota) html+=`<p class="tip" style="margin-top:10px">💡 ${escH(state.aiResult.nota)}</p>`;
+
         html+=`<div class="ingredients-panel">
           <div class="ing-title">✏️ Ingredientes detectados — editá si hace falta</div>
-          <div class="ing-list" id="ing-list">`;
+          <div class="ing-list">`;
         state.editIngredients.forEach(ing=>{
           html+=`<div class="ing-item">
             <input type="text" value="${escH(ing.val)}" oninput="updateIngredient(${ing.id},this.value)" />
@@ -375,64 +362,67 @@ function render() {
         });
         html+=`</div>
           <div class="ing-add">
-            <input type="text" id="new-ing-input" placeholder="Agregar ingrediente..." value="${escH(state.newIngredient)}" oninput="state.newIngredient=this.value" onkeydown="if(event.key==='Enter')addIngredient()" />
+            <input type="text" placeholder="Agregar ingrediente..." value="${escH(state.newIngredient)}" oninput="state.newIngredient=this.value" onkeydown="if(event.key==='Enter')addIngredient()" />
             <button onclick="addIngredient()">+ Agregar</button>
           </div>
         </div>`;
-
-        html+=`<button class="btn-primary" onclick="saveFoodLog()" style="background:#059669">✅ Confirmar y guardar</button>
-          <button class="btn-secondary" onclick="setState({aiStep:'input',aiResult:null,imageBase64:null,imagePreviewUrl:null})">↩ Volver a cargar</button>
+        html+=`<button class="btn-primary" onclick="saveFoodLog(false)" style="background:#059669">✅ Confirmar y guardar</button>
+          <button class="btn-secondary" onclick="setState({aiStep:'input',aiResult:null,imageBase64:null,imagePreviewUrl:null,error:null})">↩ Volver</button>
         </div>`;
 
       } else {
-        // ── INPUT step ──
+        // input step
         html+=`<div class="card">`;
-
-        // Image upload
         if(state.imagePreviewUrl) {
-          html+=`<img class="preview-img" src="${state.imagePreviewUrl}" />
-            <button class="btn-secondary" style="margin-top:8px;margin-bottom:0" onclick="setState({imageBase64:null,imagePreviewUrl:null})">Quitar foto</button>`;
-          if(!state.loading) {
-            html+=`<button class="btn-primary" onclick="analyzeImage()">🔍 Analizar foto con IA</button>`;
-          } else {
-            html+=`<button class="btn-primary" disabled><span class="spinner"></span>Analizando...</button>`;
-          }
-        } else {
-          html+=`<div class="upload-zone" onclick="document.getElementById('img-input').click()">
-            <div class="uz-icon">📷</div>
-            <div class="uz-text">Subir foto de la comida</div>
-            <div class="uz-sub">Toca para elegir una imagen</div>
-            <input type="file" id="img-input" accept="image/*" style="display:none" onchange="handleImage(this)" />
+          // photo loaded — show preview with two action buttons
+          html+=`<div class="preview-wrap">
+            <img class="preview-img" src="${state.imagePreviewUrl}" onclick="openPhoto('${state.imagePreviewUrl}')" />
+            <button class="preview-remove" onclick="setState({imageBase64:null,imagePreviewUrl:null,error:null})">✕ Quitar</button>
           </div>`;
-          html+=`<div class="divider">o cargá manualmente</div>`;
-          html+=`<div class="card-title">¿Qué comiste?</div>
-            <textarea id="manual-input" rows="3" placeholder="Ej: Arroz integral con pollo grillado y ensalada..." oninput="state.manualText=this.value">${escH(state.manualText)}</textarea>`;
-          const canSave = state.manualText.trim().length > 0;
-          html+=`<button class="btn-primary" ${canSave?"":"disabled"} onclick="saveFoodLog()">💾 Guardar</button>`;
+          html+=`<div class="img-actions">
+            <button class="btn-ai" onclick="analyzeImage()" ${state.loading?"disabled":""}>
+              ${state.loading?`<span class="spinner"></span>Analizando...`:"🔍 Analizar con IA"}
+            </button>
+            <button class="btn-save-photo" onclick="saveFoodLog(true)" ${state.loading?"disabled":""}>
+              💾 Guardar foto
+            </button>
+          </div>`;
+          if(state.error) html+=`<p class="error-msg">${state.error}</p>`;
+        } else {
+          // no photo yet
+          html+=`<label style="display:block;cursor:pointer" onclick="document.getElementById('img-input').click()">
+            <div class="upload-zone">
+              <div class="uz-icon">📷</div>
+              <div class="uz-text">Subir foto de la comida</div>
+              <div class="uz-sub">Toca para elegir una imagen</div>
+            </div>
+          </label>
+          <input type="file" id="img-input" accept="image/*" style="display:none" onchange="handleImage(this)" />`;
+          html+=`<div class="divider">o escribí qué comiste</div>`;
+          html+=`<textarea rows="3" placeholder="Ej: Arroz integral con pollo grillado y ensalada..." oninput="state.manualText=this.value">${escH(state.manualText)}</textarea>`;
+          const canSave=state.manualText.trim().length>0;
+          html+=`<button class="btn-primary" ${canSave?"":"disabled"} onclick="saveFoodLog(false)">💾 Guardar</button>`;
         }
-
-        if(state.error) html+=`<p class="error-msg" style="margin-top:10px">${state.error}</p>`;
         html+=`</div>`;
       }
 
-      // Today's food logs
+      // today's food logs
       const foodLogs=todayLogs.filter(l=>l.logType==="food");
       if(foodLogs.length>0) {
         html+=`<p class="section-title">Comidas del ${formatDate(state.selectedDay)}</p>`;
         foodLogs.forEach(log=>{
           const meal=MEAL_TYPES.find(m=>m.key===log.mealType);
           html+=`<div class="log-item" style="border-color:#34d399">
-            <p class="log-main">${meal?meal.emoji+' '+meal.label:"🥗"} · ${escH(log.resumen)}</p>`;
-          if(log.ingredientes&&log.ingredientes.length>0) {
-            html+=`<p class="log-sub">🥬 ${log.ingredientes.map(escH).join(", ")}</p>`;
-          }
+            <p class="log-main">${meal?meal.emoji+" "+meal.label:"🥗"} · ${escH(log.resumen)}</p>`;
+          if(log.ingredientes&&log.ingredientes.length>0) html+=`<p class="log-sub">🥬 ${log.ingredientes.map(escH).join(", ")}</p>`;
           if(log.calorias_estimadas) html+=`<p class="log-sub">~${log.calorias_estimadas} kcal</p>`;
+          if(log.imageData) html+=`<img class="log-photo" src="${log.imageData}" onclick="openPhoto('${log.imageData}')" />`;
           html+=`</div>`;
         });
       }
     }
 
-    // ── GYM ──
+    // GYM
     if(state.logType==="training") {
       html+=`<div class="card"><div class="card-title">¿Fuiste al gym hoy?</div>`;
       if(todayGym) {
@@ -449,16 +439,15 @@ function render() {
       }
       html+=`</div>`;
     }
-
     html+=`</div>`;
   }
 
-  // ── DASHBOARD ─────────────────────────────────────────
+  // ── DASHBOARD ──
   if(state.view==="dashboard") {
     html+=`<div class="pad">`;
     html+=`<div class="card"><div class="card-title">Resumen semanal</div><div class="week-grid">`;
     weekDays.forEach(day=>{
-      const sc=getDayScore(day); const d=new Date(day+"T12:00:00");
+      const sc=getDayScore(day), d=new Date(day+"T12:00:00");
       const dl=getDayLogs(day);
       const trained=dl.some(l=>l.logType==="training"&&l.fue);
       const fc=dl.filter(l=>l.logType==="food").length;
@@ -491,11 +480,10 @@ function render() {
         html+=`<div class="log-item" style="border-color:${bc}">
           <p class="log-sub">${formatDate(log.date)} · ${log.logType==="food"?(meal?meal.emoji+" "+meal.label:"Comida"):"Gym"}</p>
           <p class="log-main">${escH(log.resumen)}</p>`;
-        if(log.ingredientes&&log.ingredientes.length>0) {
-          html+=`<p class="log-sub">🥬 ${log.ingredientes.map(escH).join(", ")}</p>`;
-        }
+        if(log.ingredientes&&log.ingredientes.length>0) html+=`<p class="log-sub">🥬 ${log.ingredientes.map(escH).join(", ")}</p>`;
         if(log.calidad){const qc=qualityColor(log.calidad);html+=`<span class="badge" style="background:${qc}22;color:${qc}">${log.calidad}</span>`;}
         if(log.calorias_estimadas) html+=`<span class="badge" style="background:#a78bfa22;color:#a78bfa">~${log.calorias_estimadas} kcal</span>`;
+        if(log.imageData) html+=`<img class="log-photo" src="${log.imageData}" onclick="openPhoto('${log.imageData}')" />`;
         html+=`</div>`;
       });
     }
