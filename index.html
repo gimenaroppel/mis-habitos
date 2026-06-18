@@ -178,8 +178,23 @@ function escH(s) {
   if(!s) return "";
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
-function loadLogs() { try { const s=localStorage.getItem(STORAGE_KEY); if(s) state.logs=JSON.parse(s); } catch{} }
-function saveLogs() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.logs)); } catch{} }
+function loadLogs() { try { const s=localStorage.getItem(STORAGE_KEY); if(s) state.logs=JSON.parse(s); } catch(e) { state.logs=[]; } }
+function saveLogs() {
+  // Strip images from older logs if storage is getting full, keep last 20 with images
+  const logsToSave = state.logs.map((l,i) => {
+    const idx = state.logs.length - 1 - i; // distance from end
+    return idx > 20 ? {...l, imageData: null} : l;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logsToSave));
+  } catch(e) {
+    // Still too big — save without any images
+    try {
+      const noImages = state.logs.map(l => ({...l, imageData: null}));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(noImages));
+    } catch(e2) { console.error("Storage error", e2); }
+  }
+}
 function getDayLogs(day) { return state.logs.filter(l=>l.date===day); }
 function qualityColor(q) {
   if(q==="buena"||q==="alta") return "#4ade80";
@@ -283,9 +298,20 @@ function addIngredient(){ const v=state.newIngredient.trim(); if(!v) return; sta
 function handleImage(input) {
   const file=input.files[0]; if(!file) return;
   state.imagePreviewUrl=URL.createObjectURL(file);
-  const reader=new FileReader();
-  reader.onload=()=>{ state.imageBase64=reader.result.split(",")[1]; state.aiStep="input"; state.error=null; render(); };
-  reader.readAsDataURL(file);
+  // Compress image to max 800px wide, quality 0.7 to fit localStorage
+  const img=new Image();
+  img.onload=()=>{
+    const MAX=800;
+    let w=img.width, h=img.height;
+    if(w>MAX){ h=Math.round(h*MAX/w); w=MAX; }
+    const canvas=document.createElement("canvas");
+    canvas.width=w; canvas.height=h;
+    canvas.getContext("2d").drawImage(img,0,0,w,h);
+    const compressed=canvas.toDataURL("image/jpeg",0.7);
+    state.imageBase64=compressed.split(",")[1];
+    state.aiStep="input"; state.error=null; render();
+  };
+  img.src=state.imagePreviewUrl;
 }
 
 // ── Render ─────────────────────────────────────────────
@@ -462,12 +488,10 @@ function render() {
 
     const gymDays=weekDays.filter(d=>getDayLogs(d).some(l=>l.logType==="training"&&l.fue)).length;
     const totalFood=state.logs.filter(l=>l.logType==="food"&&weekDays.includes(l.date)).length;
-    const goodFood=state.logs.filter(l=>l.logType==="food"&&l.calidad==="buena"&&weekDays.includes(l.date)).length;
-    const healthPct=totalFood===0?"--":Math.round((goodFood/totalFood)*100)+"%";
+    const gymColor=gymDays>=4?"#4ade80":gymDays>=2?"#facc15":"#f87171";
     html+=`<div class="stats-row">
-      <div class="stat-card"><div class="stat-num" style="color:#4ade80">${gymDays}<span style="font-size:14px;color:#6b7280">/7</span></div><div class="stat-label">Días gym</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:#60a5fa">${totalFood}</div><div class="stat-label">Comidas</div></div>
-      <div class="stat-card"><div class="stat-num" style="color:#a78bfa">${healthPct}</div><div class="stat-label">Comida sana</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:${gymColor}">${gymDays}<span style="font-size:14px;color:#6b7280">/4</span></div><div class="stat-label">Meta gym semanal</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#60a5fa">${totalFood}</div><div class="stat-label">Comidas registradas</div></div>
     </div>`;
 
     html+=`<div class="card"><div class="card-title">Últimos registros</div>`;
