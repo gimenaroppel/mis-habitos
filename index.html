@@ -411,124 +411,189 @@ function handleImage(input) {
 }
 
 // ── Export as image ────────────────────────────────────
+function loadImg(src) {
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=()=>resolve(null);
+    img.src=src;
+  });
+}
+
 async function exportWeekImage() {
+  const btn = document.querySelector(".export-btn");
+  if(btn){ btn.disabled=true; btn.textContent="⏳ Generando imagen..."; }
+
   const weekDays=getWeekDays();
   const canvas=document.getElementById("export-canvas");
   const ctx=canvas.getContext("2d");
-  const W=800, ROW=110, HEADER=120, FOOTER=60;
-  const totalRows = weekDays.length;
-  canvas.width=W;
-  canvas.height=HEADER + totalRows*ROW + FOOTER;
+  const W=720;
+  const PHOTO_H=260;
 
-  // background
-  ctx.fillStyle="#0f0f14";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // header
-  ctx.fillStyle="#6366f1";
-  ctx.fillRect(0,0,W,80);
-  ctx.fillStyle="#fff";
-  ctx.font="bold 28px -apple-system, system-ui, sans-serif";
-  ctx.fillText("💪 Mis Hábitos — Resumen semanal",24,50);
-
-  const now=new Date();
-  ctx.fillStyle="#c7d2fe";
-  ctx.font="16px system-ui";
-  ctx.fillText(now.toLocaleDateString("es-AR",{weekday:"long",year:"numeric",month:"long",day:"numeric"}),24,72);
-
-  // stats bar
-  const gymDays=weekDays.filter(d=>getDayLogs(d).some(l=>l.logType==="training"&&l.fue)).length;
-  const totalFood=state.logs.filter(l=>l.logType==="food"&&weekDays.includes(l.date)).length;
-  ctx.fillStyle="#1a1a24";
-  ctx.fillRect(0,80,W,40);
-  ctx.fillStyle=gymDays>=4?"#4ade80":gymDays>=2?"#facc15":"#f87171";
-  ctx.font="bold 15px system-ui";
-  ctx.fillText(`🏋️ Gym: ${gymDays}/4 días`,24,106);
-  ctx.fillStyle="#60a5fa";
-  ctx.fillText(`🥗 Comidas registradas: ${totalFood}`,220,106);
-
-  // day rows
-  weekDays.forEach((day,idx)=>{
-    const y=HEADER+idx*ROW;
+  const entries=[];
+  weekDays.forEach(day=>{
     const dl=getDayLogs(day);
-    const d=new Date(day+"T12:00:00");
-    const sc=getDayScore(day);
-    const trained=dl.some(l=>l.logType==="training"&&l.fue);
-    const foodLogs=dl.filter(l=>l.logType==="food");
-
-    // row bg
-    ctx.fillStyle=idx%2===0?"#13131a":"#16161f";
-    ctx.fillRect(0,y,W,ROW);
-
-    // left color bar
-    ctx.fillStyle=scoreColor(sc);
-    ctx.fillRect(0,y,4,ROW);
-
-    // day label
-    ctx.fillStyle="#e2e8f0";
-    ctx.font="bold 16px system-ui";
-    ctx.fillText(DAYS_FULL[d.getDay()],14,y+28);
-    ctx.fillStyle="#6b7280";
-    ctx.font="13px system-ui";
-    ctx.fillText(formatDate(day),14,y+48);
-
-    // gym badge
-    if(trained!==undefined && dl.some(l=>l.logType==="training")) {
-      const gymLog=dl.find(l=>l.logType==="training");
-      ctx.fillStyle=gymLog&&gymLog.fue?"#052e16":"#2d0a0a";
-      roundRect(ctx,14,y+56,80,22,6);
-      ctx.fill();
-      ctx.fillStyle=gymLog&&gymLog.fue?"#4ade80":"#f87171";
-      ctx.font="12px system-ui";
-      ctx.fillText(gymLog&&gymLog.fue?"✅ Gym":"❌ No gym",22,y+71);
-    }
-
-    // food entries
-    let fx=110;
-    foodLogs.slice(0,4).forEach(log=>{
-      const meal=MEAL_TYPES.find(m=>m.key===log.mealType);
-      ctx.fillStyle="#1e1e2e";
-      roundRect(ctx,fx,y+10,170,ROW-20,8);
-      ctx.fill();
-      ctx.fillStyle="#e2e8f0";
-      ctx.font="bold 12px system-ui";
-      ctx.fillText((meal?meal.emoji+" "+meal.label:"🥗 Comida"),fx+8,y+28);
-      ctx.fillStyle="#9ca3af";
-      ctx.font="11px system-ui";
-      const resumen=log.resumen||"";
-      ctx.fillText(resumen.length>22?resumen.substring(0,22)+"…":resumen,fx+8,y+46);
-      if(log.ingredientes&&log.ingredientes.length>0){
-        ctx.fillStyle="#4b5563";
-        ctx.font="10px system-ui";
-        const ing=log.ingredientes.slice(0,2).join(", ");
-        ctx.fillText(ing.length>28?ing.substring(0,28)+"…":ing,fx+8,y+62);
-      }
-      if(log.calidad){
-        const qc=qualityColor(log.calidad);
-        ctx.fillStyle=qc+"44";
-        roundRect(ctx,fx+8,y+70,60,18,4); ctx.fill();
-        ctx.fillStyle=qc;
-        ctx.font="10px system-ui";
-        ctx.fillText(log.calidad,fx+14,y+82);
-      }
-      fx+=178;
-      if(fx+170>W) return;
-    });
+    if(dl.length===0) return;
+    entries.push({type:"daytitle", day});
+    const gym=dl.find(l=>l.logType==="training");
+    if(gym) entries.push({type:"gym", log:gym});
+    dl.filter(l=>l.logType==="food").forEach(log=>entries.push({type:"food", log}));
   });
 
-  // footer
-  ctx.fillStyle="#1a1a24";
-  ctx.fillRect(0,canvas.height-FOOTER,W,FOOTER);
-  ctx.fillStyle="#374151";
-  ctx.font="13px system-ui";
-  ctx.fillText("Generado con Mis Hábitos · gimenaroppel.github.io/mis-habitos/",24,canvas.height-FOOTER+30);
+  if(entries.length===0) {
+    alert("No hay registros esta semana para exportar.");
+    if(btn){ btn.disabled=false; btn.textContent="📤 Exportar semana para mi nutri"; }
+    return;
+  }
 
-  // download
+  const loadedImages={};
+  for(const e of entries) {
+    if(e.type==="food" && e.log.imageData) {
+      loadedImages[e.log.id] = await loadImg(e.log.imageData);
+    }
+  }
+
+  const HEADER=110, FOOTER=50;
+  let totalH = HEADER;
+  entries.forEach(e=>{
+    if(e.type==="daytitle") totalH += 50;
+    else if(e.type==="gym") totalH += 50;
+    else if(e.type==="food") {
+      const img = loadedImages[e.log.id];
+      let cardH = 60;
+      if(img) cardH += PHOTO_H + 10;
+      if(e.log.ingredientes && e.log.ingredientes.length>0) cardH += 24;
+      if(e.log.comentario) cardH += 22;
+      if(e.log.calorias_estimadas || e.log.calidad) cardH += 30;
+      totalH += cardH + 16;
+    }
+  });
+  totalH += FOOTER;
+
+  canvas.width=W;
+  canvas.height=totalH;
+
+  ctx.fillStyle="#0f0f14";
+  ctx.fillRect(0,0,W,canvas.height);
+
+  ctx.fillStyle="#6366f1";
+  ctx.fillRect(0,0,W,90);
+  ctx.fillStyle="#fff";
+  ctx.font="bold 26px -apple-system, system-ui, sans-serif";
+  ctx.fillText("💪 Mis Hábitos — Resumen semanal",24,40);
+  const now=new Date();
+  ctx.fillStyle="#c7d2fe";
+  ctx.font="14px system-ui";
+  const gymDays=weekDays.filter(d=>getDayLogs(d).some(l=>l.logType==="training"&&l.fue)).length;
+  const totalFood=state.logs.filter(l=>l.logType==="food"&&weekDays.includes(l.date)).length;
+  ctx.fillText(`🏋️ Gym: ${gymDays}/4 días   ·   🥗 ${totalFood} comidas registradas`,24,68);
+  ctx.font="12px system-ui";
+  ctx.fillStyle="#a5b4fc";
+  ctx.fillText(now.toLocaleDateString("es-AR",{day:"numeric",month:"long",year:"numeric"}),24,86);
+
+  let y=HEADER;
+  for(const e of entries) {
+    if(e.type==="daytitle") {
+      const d=new Date(e.day+"T12:00:00");
+      ctx.fillStyle="#1e1e2e";
+      ctx.fillRect(0,y,W,40);
+      ctx.fillStyle="#9ca3af";
+      ctx.font="bold 14px system-ui";
+      ctx.fillText(`📅 ${DAYS_FULL[d.getDay()]} ${formatDate(e.day)}`,24,y+26);
+      y+=50;
+    }
+    else if(e.type==="gym") {
+      const fue=e.log.fue;
+      ctx.fillStyle=fue?"#052e16":"#2d0a0a";
+      roundRect(ctx,24,y,W-48,36,8); ctx.fill();
+      ctx.fillStyle=fue?"#4ade80":"#f87171";
+      ctx.font="bold 13px system-ui";
+      ctx.fillText(fue?"✅ Fue al gym":"❌ No fue al gym",40,y+24);
+      y+=50;
+    }
+    else if(e.type==="food") {
+      const log=e.log;
+      const img=loadedImages[log.id];
+      const meal=MEAL_TYPES.find(m=>m.key===log.mealType);
+      let cardH=60;
+      if(img) cardH+=PHOTO_H+10;
+      if(log.ingredientes&&log.ingredientes.length>0) cardH+=24;
+      if(log.comentario) cardH+=22;
+      if(log.calorias_estimadas||log.calidad) cardH+=30;
+
+      ctx.fillStyle="#1a1a24";
+      roundRect(ctx,24,y,W-48,cardH,12); ctx.fill();
+
+      let cy=y+28;
+      ctx.fillStyle="#e2e8f0";
+      ctx.font="bold 15px system-ui";
+      ctx.fillText(`${meal?meal.emoji+" "+meal.label:"🥗 Comida"} — ${log.resumen||""}`.substring(0,60),40,cy);
+      cy+=28;
+
+      if(img) {
+        const maxW=W-80;
+        let dh=PHOTO_H;
+        const ratio=Math.min(maxW/img.width, dh/img.height);
+        const drawW=img.width*ratio, drawH=img.height*ratio;
+        const dx=40+(maxW-drawW)/2;
+        ctx.save();
+        roundRect(ctx,40,cy,maxW,PHOTO_H,10);
+        ctx.clip();
+        ctx.fillStyle="#0f0f14";
+        ctx.fillRect(40,cy,maxW,PHOTO_H);
+        ctx.drawImage(img,dx,cy+(PHOTO_H-drawH)/2,drawW,drawH);
+        ctx.restore();
+        cy+=PHOTO_H+14;
+      }
+
+      if(log.ingredientes&&log.ingredientes.length>0) {
+        ctx.fillStyle="#9ca3af";
+        ctx.font="12px system-ui";
+        const ing="🥬 "+log.ingredientes.join(", ");
+        ctx.fillText(ing.length>70?ing.substring(0,70)+"…":ing,40,cy);
+        cy+=24;
+      }
+
+      if(log.comentario) {
+        ctx.fillStyle="#a5b4fc";
+        ctx.font="italic 12px system-ui";
+        const com="💬 "+log.comentario;
+        ctx.fillText(com.length>70?com.substring(0,70)+"…":com,40,cy);
+        cy+=22;
+      }
+
+      if(log.calorias_estimadas||log.calidad) {
+        let bx=40;
+        if(log.calidad){
+          const qc=qualityColor(log.calidad);
+          ctx.fillStyle=qc+"33";
+          roundRect(ctx,bx,cy-14,90,24,6); ctx.fill();
+          ctx.fillStyle=qc; ctx.font="bold 11px system-ui";
+          ctx.fillText("● "+log.calidad,bx+8,cy+2);
+          bx+=100;
+        }
+        if(log.calorias_estimadas) {
+          ctx.fillStyle="#a78bfa33";
+          roundRect(ctx,bx,cy-14,90,24,6); ctx.fill();
+          ctx.fillStyle="#a78bfa"; ctx.font="bold 11px system-ui";
+          ctx.fillText(`~${log.calorias_estimadas} kcal`,bx+8,cy+2);
+        }
+      }
+
+      y+=cardH+16;
+    }
+  }
+
+  ctx.fillStyle="#374151";
+  ctx.font="12px system-ui";
+  ctx.fillText("Generado con Mis Hábitos",24,canvas.height-20);
+
   canvas.toBlob(blob=>{
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url; a.download=`mis-habitos-${todayKey()}.png`; a.click();
     URL.revokeObjectURL(url);
+    if(btn){ btn.disabled=false; btn.textContent="📤 Exportar semana para mi nutri"; }
   },"image/png");
 }
 
